@@ -157,7 +157,7 @@ public class ContestServiceTest {
         Exception exception = assertThrows(RuntimeException.class, () -> {
             contestService.attendContest(999L, 1L);
         });
-        assertEquals("Contest: 999 not found!", exception.getMessage());
+        assertEquals("Contest with an id 999 not found!", exception.getMessage());
     }
 
     @Test
@@ -166,14 +166,14 @@ public class ContestServiceTest {
         User user = new User("Ross");
         userRepository.save(user);
 
-        Contest contest = new Contest("Contest1", DifficultyLevel.LOW, user, new ArrayList<>());
-        contestRepository.save(contest);
+        Contest newContest = new Contest("Contest1", DifficultyLevel.LOW, user, new ArrayList<>());
+        Contest contest = contestRepository.save(newContest);
 
         // Call method and verify exception
         Exception exception = assertThrows(RuntimeException.class, () -> {
             contestService.attendContest(contest.getId(), 999L);
         });
-        assertEquals("User with an id: 999 not found!", exception.getMessage());
+        assertEquals("User with an id 999 not found!", exception.getMessage());
     }
 
     @Test
@@ -242,6 +242,6 @@ public class ContestServiceTest {
         Exception exception = assertThrows(RuntimeException.class, () -> {
             contestService.contestHistory(999L);
         });
-        assertEquals("Contest: 999 not Found!", exception.getMessage());
+        assertEquals("Contest with an id 999 not found!", exception.getMessage());
     }
 }
