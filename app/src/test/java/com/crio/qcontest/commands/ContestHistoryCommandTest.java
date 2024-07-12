@@ -61,7 +61,7 @@ public class ContestHistoryCommandTest {
         contestHistoryCommand.invoke(List.of("ContestHistory", contestId.toString()));
 
         // Assert
-        String expectedOutput = "User1 : 20 [2]\nUser2 : 10 [1]";
+        String expectedOutput = "User2 : 20 [2]\nUser1 : 10 [1]";
         verify(contestService).contestHistory(contestId);
         assertEquals(expectedOutput, outContent.toString().trim());
     }

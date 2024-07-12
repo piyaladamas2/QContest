@@ -94,7 +94,7 @@ public class ContestService{
      */
     public void runContest(Long contestId, Long userId) {
         // Check if contest is valid as per the required conditions.
-        Contest contest = contestRepository.findById(contestId).orElseThrow(() -> new RuntimeException("Contest: "+contestId+" not found!"));
+        Contest contest = contestRepository.findById(contestId).orElseThrow(() -> new RuntimeException("Contest with an id "+contestId+" not found!"));
         if(!contest.getCreator().getId().equals(userId)){
             throw new RuntimeException("Only the contest creator can run the contest!");
         }
