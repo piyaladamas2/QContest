@@ -1,8 +1,10 @@
 package com.crio.qcontest.services;
 
  import java.util.Collections;
+import java.util.Comparator;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -15,6 +17,8 @@ import com.crio.qcontest.repositories.IContestRepository;
 import com.crio.qcontest.repositories.IContestantRepository;
 import com.crio.qcontest.repositories.IQuestionRepository;
 import com.crio.qcontest.repositories.IUserRepository;
+import com.crio.qcontest.repositories.QuestionRepository;
+import com.crio.qcontest.repositories.UserRepository;
 
 public class ContestService{
     private final IContestantRepository contestantRepository;
@@ -40,7 +44,17 @@ public class ContestService{
      * @throws RuntimeException if user is not found or requested questions cannot be fulfilled.
      */
     public Contest createContest(String name, DifficultyLevel level, Long userId, Integer numOfQuestions) {
-        return null;
+        User creator= userRepository.findById(userId).orElseThrow(()->new RuntimeException("User with an id: "+ userId+ " not found!"));
+        
+        List<Question> listOfQuestion= questionRepository.findByDifficultyLevel(level);
+        Integer numberOfTotalQuestions= listOfQuestion.size();
+        if(numberOfTotalQuestions<numOfQuestions){
+            throw new RuntimeException("Requested number of questions: "+ numOfQuestions+" cannot be fulfilled!");
+        }
+        List<Question> setOfQuestions= pickRandomQuestions(listOfQuestion, numOfQuestions);
+        Contest newContest= new Contest(name,level,creator,setOfQuestions);
+        Contest contest= contestRepository.save(newContest);
+        return contest;
 
     }
 
@@ -66,7 +80,13 @@ public class ContestService{
      * @return List of contests filtered by difficulty level.
      */
     public List<Contest> listContests(DifficultyLevel level) {
-        return Collections.emptyList();
+        List<Contest> listOfContest;
+        if(level !=null){
+            listOfContest= contestRepository.findByDifficultyLevel(level);
+        }else{
+            listOfContest= contestRepository.findAll();
+        }
+        return listOfContest;
     }
 
     /**
@@ -77,7 +97,14 @@ public class ContestService{
      * @throws RuntimeException if contest or user is not found.
      */
     public Contestant attendContest(Long contestId, Long userId) {
-        return null;
+        Contest contestToBeAttend= contestRepository.findById(contestId)
+        .orElseThrow(()->new RuntimeException("Contest with an id "+contestId+" not found!"));
+        User user= userRepository.findById(userId)
+        .orElseThrow(()->new RuntimeException("User with an id "+userId+" not found!"));
+        
+        Contestant newContestant= new Contestant(user,contestToBeAttend);
+        Contestant contestant= contestantRepository.save(newContestant);
+        return contestant;
     }
 
     /**
@@ -88,7 +115,13 @@ public class ContestService{
      * @throws RuntimeException if contestant is not found.
      */
     public Boolean withdrawContest(Long contestId, Long userId) {
-        return null;
+        Contestant contestant= contestantRepository.findById(contestId, userId).orElseThrow(()->new RuntimeException("Contestant not found!")); 
+        // if(contestant.getContest().getCreator().getId().equals(userId)){
+        //     return false;
+        // }
+            contestantRepository.deleteById(contestId, userId);
+    
+        return true;
     }
 
     /**
@@ -134,6 +167,11 @@ public class ContestService{
      * @throws RuntimeException if contest is not found.
      */
     public List<Contestant> contestHistory(Long contestId) {
-        return Collections.emptyList();
+        List<Contestant> listOfContestant = contestantRepository.findByContestId(contestId);
+        if(listOfContestant ==null || listOfContestant.isEmpty()){
+            throw new RuntimeException("Contest with an id "+ contestId+" not found!");
+        }
+        listOfContestant.sort(Comparator.comparingInt(Contestant::getTotalScore).reversed());
+        return listOfContestant;
     }  
 }

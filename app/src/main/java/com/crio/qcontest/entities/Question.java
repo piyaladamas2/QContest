@@ -12,6 +12,7 @@ public class Question {
         this.level = level;
         this.score = score;
     }
+    
 
     public Question(Long id, Question other) {
         this.id = id;

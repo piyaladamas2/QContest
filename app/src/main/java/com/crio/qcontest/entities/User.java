@@ -33,8 +33,11 @@ public class User {
         this.score = score;
     }
 
-    @Override
-    public String toString() {
-        return "User [id=" + id + "]";
-    }  
+    
+
+     @Override
+     public String toString() {
+         return "User [id=" + id + "]";
+     } 
+     
 }

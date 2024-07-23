@@ -36,6 +36,7 @@ public class App {
     private final IQuestionRepository questionRepository = new QuestionRepository();
     private final IContestRepository contestRepository = new ContestRepository();
     private final IContestantRepository contestantRepository = new ContestantRepository();
+    
      
     // Initialize services
     private final UserService userService = new UserService(userRepository);

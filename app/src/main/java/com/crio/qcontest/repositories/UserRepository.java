@@ -17,7 +17,7 @@ public class UserRepository implements IUserRepository{
     @Override
     public User save(User entity) {
         User user = new User(idCounter.incrementAndGet(),entity);
-        storage.putIfAbsent(user.getId(),user);
+        storage.putIfAbsent(user.getId(),user); // how getId is working??
         return user;
     }
 

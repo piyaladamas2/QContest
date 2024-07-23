@@ -3,7 +3,7 @@ package com.crio.qcontest.services;
  import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
+import java.util.stream.Collectors;
 import com.crio.qcontest.entities.User;
 import com.crio.qcontest.repositories.IUserRepository;
 
@@ -21,7 +21,10 @@ public class UserService{
      * @return Created User object.
      */
     public User createUser(String name) {
-        return null;
+
+        User newUser= new User(name);
+        User user= userRepository.save(newUser);
+        return user;
     }
 
     /**
@@ -30,6 +33,20 @@ public class UserService{
      * @return List of users sorted by score as per the specified order.
      */
     public List<User> showLeaderBoard(String order) {
-        return Collections.emptyList();
+        List<User> listOfUser;
+        listOfUser= userRepository.findAll();
+
+        if ("asc".equalsIgnoreCase(order)) {
+            listOfUser = listOfUser.stream()
+                    .sorted(Comparator.comparingInt(User::getScore))
+                    .collect(Collectors.toList());
+        } else if ("desc".equalsIgnoreCase(order)) {
+            listOfUser = listOfUser.stream()
+                    .sorted(Comparator.comparingInt(User::getScore).reversed())
+                    .collect(Collectors.toList());
+        } else {
+            listOfUser = Collections.emptyList(); // or throw an exception for invalid order value
+        }
+        return listOfUser;
     } 
 }
