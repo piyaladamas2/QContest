@@ -11,6 +11,17 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Iterator;
 
+import com.crio.qcontest.commands.CommandInvoker;
+import com.crio.qcontest.commands.AttendContestCommand;
+import com.crio.qcontest.commands.ContestHistoryCommand;
+import com.crio.qcontest.commands.CreateContestCommand;
+import com.crio.qcontest.commands.CreateQuestionCommand;
+import com.crio.qcontest.commands.CreateUserCommand;
+import com.crio.qcontest.commands.ListContestsCommand;
+import com.crio.qcontest.commands.ListQuestionsCommand;
+import com.crio.qcontest.commands.LeaderBoardCommand;
+import com.crio.qcontest.commands.RunContestCommand;
+import com.crio.qcontest.commands.WithdrawContestCommand;
 import com.crio.qcontest.entities.Contest;
 import com.crio.qcontest.entities.Contestant;
 import com.crio.qcontest.entities.DifficultyLevel;
@@ -36,13 +47,40 @@ public class App {
     private final IQuestionRepository questionRepository = new QuestionRepository();
     private final IContestRepository contestRepository = new ContestRepository();
     private final IContestantRepository contestantRepository = new ContestantRepository();
-    
      
     // Initialize services
     private final UserService userService = new UserService(userRepository);
     private final QuestionService questionService = new QuestionService(questionRepository);
     private final ContestService contestService = new ContestService(contestantRepository,contestRepository,questionRepository,userRepository);
 
+    // Initialize commands
+    private final CreateUserCommand createUserCommand = new CreateUserCommand(userService);
+    private final CreateQuestionCommand createQuestionCommand = new CreateQuestionCommand(questionService);
+    private final ListQuestionsCommand  listQuestionCommand = new ListQuestionsCommand(questionService);
+    private final CreateContestCommand createContestCommand = new CreateContestCommand(contestService);
+    private final ListContestsCommand listContestCommand = new ListContestsCommand(contestService);
+    private final AttendContestCommand attendContestCommand = new AttendContestCommand(contestService);
+    private final WithdrawContestCommand withdrawContestCommand = new WithdrawContestCommand(contestService);
+    private final RunContestCommand runContestCommand = new RunContestCommand(contestService);
+    private final ContestHistoryCommand contestHistoryCommand = new ContestHistoryCommand(contestService);
+    private final LeaderBoardCommand leaderBoardCommand = new LeaderBoardCommand(userService);
+
+    // Initialize commandInvoker
+    private final CommandInvoker commandInvoker = new CommandInvoker();
+
+    // Register commands 
+    private void registerCommands(){
+        commandInvoker.register("CREATE_USER",createUserCommand);
+        commandInvoker.register("CREATE_QUESTION",createQuestionCommand);
+        commandInvoker.register("LIST_QUESTIONS",listQuestionCommand);
+        commandInvoker.register("CREATE_CONTEST",createContestCommand);
+        commandInvoker.register("LIST_CONTEST",listContestCommand);
+        commandInvoker.register("ATTEND_CONTEST",attendContestCommand);
+        commandInvoker.register("WITHDRAW_CONTEST",withdrawContestCommand);
+        commandInvoker.register("RUN_CONTESTD",runContestCommand);
+        commandInvoker.register("CONTEST_HISTORY",contestHistoryCommand);
+        commandInvoker.register("LEADERBOARD",leaderBoardCommand);
+    }
 
 
     public static void main(String[] args) {
@@ -75,6 +113,7 @@ public class App {
 
     public void run(List<String> commands){
 
+        registerCommands();
         Iterator<String> it = commands.iterator();
         while(it.hasNext()){
             String line = it.next();
@@ -83,42 +122,7 @@ public class App {
                 }
                 
                 try {
-                List<String> tokens = Arrays.asList(line.split(","));
-                    //Execute Services
-                    switch(tokens.get(0)){
-                        case "CREATE_USER":
-                            CREATE_USER(tokens);
-                        break;
-                        case "CREATE_QUESTION":
-                            CREATE_QUESTION(tokens);
-                        break;
-                        case "LIST_QUESTION":
-                            LIST_QUESTION(tokens);
-                        break;
-                        case "CREATE_CONTEST":
-                            CREATE_CONTEST(tokens);
-                        break;
-                        case "LIST_CONTEST":
-                            LIST_CONTEST(tokens);
-                        break;
-                        case "ATTEND_CONTEST":
-                            ATTEND_CONTEST(tokens);
-                        break;
-                        case "WITHDRAW_CONTEST":
-                            WITHDRAW_CONTEST(tokens);
-                        break;
-                        case "RUN_CONTEST":
-                            RUN_CONTEST(tokens);
-                        break;
-                        case "CONTEST_HISTORY":
-                            CONTEST_HISTORY(tokens);
-                        break;
-                        case "LEADERBOARD":
-                            LEADERBOARD(tokens);
-                        break;
-                        default:
-                            throw new RuntimeException("INVALID_COMMAND");
-                }
+                commandInvoker.invoke(line);
                 } catch (Exception e) {
                     System.out.println("ERROR: " + e.getMessage());
                 }
